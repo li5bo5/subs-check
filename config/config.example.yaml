@@ -1,0 +1,71 @@
+# 是否显示进度
+print-progress: true
+
+# 并发线程数
+concurrent: 20
+
+# 检查间隔(分钟)
+check-interval: 30
+
+# 超时时间(毫秒)(节点的最大延迟)
+timeout: 5000
+
+# 测速地址(注意 并发数*节点速度<最大网速 否则测速结果不准确)
+# 尽量不要使用Speedtest，Cloudflare提供的下载链接，因为很多节点屏蔽测速网站
+# 建议使用自己上传到Cloudflare R2的文件
+speed-test-url: https://gh-proxy.henryjiu.workers.dev/https://github.com/AaronFeng753/Waifu2x-Extension-GUI/releases/download/v2.21.12/Waifu2x-Extension-GUI-v2.21.12-Portable.7z
+
+# 最低测速结果舍弃(KB/s)
+min-speed: 1024
+
+# 下载测试时间(s)(与下载链接大小相关，默认最大测试10s)
+download-timeout: 10
+
+# 监听端口，用于直接返回节点信息，方便订阅转换
+# http://127.0.0.1:8199/all.yaml
+# 注意：为方便小白默认监听0.0.0.0:8199，请自行修改
+listen-port: ":8199"
+
+# 以节点IP查询位置重命名节点
+# 质量差的节点可能造成IP查询失败，造成整体检查速度稍微变慢，默认false
+rename-node: false
+
+# 保留之前测试成功的节点
+# 如果为true，则保留之前测试成功的节点，这样就不会因为上游链接更新，导致可用的节点被清除掉
+keep-success-proxies: false
+
+# mihomo api url(测试完成后自动更新mihomo订阅)
+mihomo-api-url: ""
+
+# mihomo api secret
+mihomo-api-secret: ""
+
+# 保存方法
+# 目前支持的保存方法: local, gist
+save-method: local
+
+# gist id
+github-gist-id: ""
+
+# github token
+github-token: ""
+
+# github api mirror
+github-api-mirror: ""
+
+# 将测速结果推送到Worker的地址
+worker-url: https://example.worker.dev
+
+# Worker令牌
+worker-token: 1234567890
+
+# 重试次数(获取订阅失败后重试次数)
+sub-urls-retry: 3
+
+# 订阅地址 支持 clash/mihomo/v2ray/base64 格式的订阅链接
+# 如果用户想使用clash类型，那可以在支持的订阅链接结尾加上 &flag=clash.meta
+sub-urls:
+  - https://example.com/sub.txt
+  - https://example.com/sub2.txt
+  - https://example.com/sub?token=43fa8f0dc9bb00dcfec2afb21b14378a
+  - https://example.com/sub?token=43fa8f0dc9bb00dcfec2afb21b14378a?flag=clash.meta
