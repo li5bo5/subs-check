@@ -17,10 +17,6 @@ type httpClient interface {
 }
 
 // API 响应的结构体
-type versionResponse struct {
-	Version string `json:"version"`
-}
-
 type providersResponse struct {
 	Providers map[string]struct {
 		VehicleType string `json:"vehicleType"`
@@ -57,16 +53,18 @@ func makeRequest(client httpClient, method, url string) ([]byte, error) {
 	return body, nil
 }
 
+// UpdateSubs 更新所有HTTP类型的订阅
 func UpdateSubs() {
-	version, err := getVersion(http.DefaultClient)
-	if err != nil {
-		slog.Error(fmt.Sprintf("获取版本失败: %v", err))
-		return
-	}
-
+	slog.Info("开始更新订阅...")
+	
 	names, err := getNeedUpdateNames(http.DefaultClient)
 	if err != nil {
 		slog.Error(fmt.Sprintf("获取需要更新的订阅失败: %v", err))
+		return
+	}
+
+	if len(names) == 0 {
+		slog.Info("没有需要更新的HTTP类型订阅")
 		return
 	}
 
@@ -74,7 +72,7 @@ func UpdateSubs() {
 		slog.Error(fmt.Sprintf("更新订阅失败: %v", err))
 		return
 	}
-	slog.Info("订阅更新完成")
+	slog.Info(fmt.Sprintf("订阅更新完成，共更新 %d 个订阅", len(names)))
 }
 
 func getNeedUpdateNames(client httpClient) ([]string, error) {
