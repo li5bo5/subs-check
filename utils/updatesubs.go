@@ -8,7 +8,7 @@ import (
 
 	"log/slog"
 
-	"github.com/li5bo5/subs-check/config"
+	"github.com/beck-8/subs-check/config"
 )
 
 // 定义通用的 HTTP 客户端接口
@@ -17,6 +17,10 @@ type httpClient interface {
 }
 
 // API 响应的结构体
+type versionResponse struct {
+	Version string `json:"version"`
+}
+
 type providersResponse struct {
 	Providers map[string]struct {
 		VehicleType string `json:"vehicleType"`
@@ -53,10 +57,20 @@ func makeRequest(client httpClient, method, url string) ([]byte, error) {
 	return body, nil
 }
 
-// UpdateSubs 更新所有HTTP类型的订阅
 func UpdateSubs() {
-	slog.Info("开始更新订阅...")
-	
+	if config.GlobalConfig.MihomoApiUrl == "" {
+		slog.Warn("未配置 MihomoApiUrl，跳过更新")
+		return
+	}
+
+	version, err := getVersion(http.DefaultClient)
+	if err != nil {
+		slog.Error(fmt.Sprintf("获取版本失败: %v", err))
+		return
+	}
+
+	slog.Info(fmt.Sprintf("当前Mihomo版本: %s", version))
+
 	names, err := getNeedUpdateNames(http.DefaultClient)
 	if err != nil {
 		slog.Error(fmt.Sprintf("获取需要更新的订阅失败: %v", err))
@@ -73,6 +87,20 @@ func UpdateSubs() {
 		return
 	}
 	slog.Info(fmt.Sprintf("订阅更新完成，共更新 %d 个订阅", len(names)))
+}
+
+func getVersion(client httpClient) (string, error) {
+	url := fmt.Sprintf("%s/version", config.GlobalConfig.MihomoApiUrl)
+	body, err := makeRequest(client, http.MethodGet, url)
+	if err != nil {
+		return "", err
+	}
+
+	var version versionResponse
+	if err := json.Unmarshal(body, &version); err != nil {
+		return "", fmt.Errorf("解析版本信息失败: %w", err)
+	}
+	return version.Version, nil
 }
 
 func getNeedUpdateNames(client httpClient) ([]string, error) {
@@ -97,12 +125,18 @@ func getNeedUpdateNames(client httpClient) ([]string, error) {
 }
 
 func updateSubs(client httpClient, names []string) error {
+	var hasError bool
 	for _, name := range names {
 		url := fmt.Sprintf("%s/providers/proxies/%s", config.GlobalConfig.MihomoApiUrl, name)
 		if _, err := makeRequest(client, http.MethodPut, url); err != nil {
+			hasError = true
 			slog.Error(fmt.Sprintf("更新订阅%v失败: %v", name, err))
+			continue
 		}
 		slog.Info(fmt.Sprintf("成功更新订阅: %s", name))
+	}
+	if hasError {
+		return fmt.Errorf("部分订阅更新失败")
 	}
 	return nil
 }
