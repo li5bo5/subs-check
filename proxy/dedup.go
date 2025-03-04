@@ -5,7 +5,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/beck-8/subs-check/config"
+	"github.com/li5bo5/subs-check/config"
 )
 
 func DeduplicateProxies(proxies []map[string]any) []map[string]any {

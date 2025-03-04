@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/beck-8/subs-check/utils"
+	"github.com/li5bo5/subs-check/utils"
 )
 
 const (
