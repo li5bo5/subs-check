@@ -1,5 +1,7 @@
 # 订阅合并转换检测工具
 
+兴趣爱好，目前不建议使用本项目
+
 ## 原项目
 
 - https://github.com/bestruirui/BestSub
