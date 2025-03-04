@@ -57,5 +57,32 @@
 - 移除updatesubs.go中getversion字段
 - 移除MihomoApi更新订阅功能
 
+## 2024-03-04-1
+### 代码优化
+1. 优化 utils/updatesubs.go
+   - 移除未使用的版本相关代码和结构体
+   - 优化 UpdateSubs 函数的日志输出
+   - 添加空订阅列表检查
+   - 添加更新完成时的订阅数量统计
+
+### 配置文件更新
+1. 更新 .goreleaser.yaml
+   - 添加 version: 2 声明
+   - 修复配置文件版本警告
+   - 保持其他构建配置不变
+
+2. 优化 Dockerfile
+   - 指定具体的基础镜像版本：golang:1.21-alpine
+   - 添加必要的构建依赖：gcc 和 musl-dev
+   - 优化构建流程，分步执行依赖下载和验证
+   - 使用 JSON 数组格式的 CMD 指令，提高稳定性
+
+## 2024-03-04-2
+### 配置更新
+1. 更新 Dockerfile 基础镜像
+   - 升级 Go 版本到最新稳定版 1.24.0
+   - 使用 golang:1.24.0-alpine 作为构建基础镜像
+   - 移除旧版本注释
+
 待完善：
 - 添加sing-box生成格式
