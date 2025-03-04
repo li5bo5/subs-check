@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-
 	"github.com/lmittmann/tint"
 	mihomoLog "github.com/metacubex/mihomo/log"
 )
