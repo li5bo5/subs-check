@@ -15,12 +15,8 @@ type Config struct {
 	GithubToken        string   `yaml:"github-token"`
 	GithubGistID       string   `yaml:"github-gist-id"`
 	GithubAPIMirror    string   `yaml:"github-api-mirror"`
-	WorkerURL          string   `yaml:"worker-url"`
-	WorkerToken        string   `yaml:"worker-token"`
 	SubUrlsReTry       int      `yaml:"sub-urls-retry"`
 	SubUrls            []string `yaml:"sub-urls"`
-	MihomoApiUrl       string   `yaml:"mihomo-api-url"`
-	MihomoApiSecret    string   `yaml:"mihomo-api-secret"`
 	ListenPort         string   `yaml:"listen-port"`
 	RenameNode         bool     `yaml:"rename-node"`
 	KeepSuccessProxies bool     `yaml:"keep-success-proxies"`

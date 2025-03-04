@@ -34,12 +34,6 @@ rename-node: false
 # 如果为true，则保留之前测试成功的节点，这样就不会因为上游链接更新，导致可用的节点被清除掉
 keep-success-proxies: false
 
-# mihomo api url(测试完成后自动更新mihomo订阅)
-mihomo-api-url: ""
-
-# mihomo api secret
-mihomo-api-secret: ""
-
 # 保存方法
 # 目前支持的保存方法: local, gist
 save-method: local
@@ -52,12 +46,6 @@ github-token: ""
 
 # github api mirror
 github-api-mirror: ""
-
-# 将测速结果推送到Worker的地址
-worker-url: https://example.worker.dev
-
-# Worker令牌
-worker-token: 1234567890
 
 # 重试次数(获取订阅失败后重试次数)
 sub-urls-retry: 3

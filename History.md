@@ -35,7 +35,27 @@
 
 ## 2024-03-03-2
 ### 修改
+- 移除MihomoApi更新订阅功能
 - CI/CD 配置调整
   - 移除 GitHub Container Registry 发布配置
   - 仅保留 Docker Hub 镜像发布
   - 保持多平台构建支持 (linux/amd64, linux/arm64, linux/arm/v7) 
+
+## 2024-03-03-3
+### 推送github
+- 推送github
+
+## 2024-03-03-4
+### 小修
+- 移除config.example.yaml中worker-url和worker-token内容
+- 移除config.example.yaml中mihomo-api-url和mihomo-api-secret内容
+- 移除config.go中MihomoApiUrl和MihomoApiSecret字段
+
+## 2024-03-03-5
+### 小修
+- 日志：未配置 MihomoApiUrl，跳过更新
+- 移除updatesubs.go中getversion字段
+- 移除MihomoApi更新订阅功能
+
+待完善：
+- 添加sing-box生成格式
