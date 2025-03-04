@@ -10,9 +10,9 @@ import (
 
 	"log/slog"
 
-	"github.com/beck-8/subs-check/check"
-	"github.com/beck-8/subs-check/config"
-	"github.com/beck-8/subs-check/save/method"
+	"github.com/li5bo5/subs-check/check"
+	"github.com/li5bo5/subs-check/config"
+	"github.com/li5bo5/subs-check/save/method"
 	"github.com/buger/jsonparser"
 	"gopkg.in/yaml.v3"
 )
