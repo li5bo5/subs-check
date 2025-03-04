@@ -97,5 +97,40 @@
    - 添加健康检查机制
    - 简化容器运行配置
 
+## 2024-03-04-4
+### Dockerfile构建修复
+1. 添加必要的构建依赖
+   - 增加 linux-headers 支持
+   - 添加 git 和 make 工具
+   - 优化依赖安装顺序
+
+## 2024-03-04-5
+### Dockerfile CI/CD 适配
+1. 优化构建环境
+   - 添加包索引更新
+   - 通过环境变量设置构建参数
+   - 明确指定目标平台为 linux/amd64
+
+## 2024-03-04-6
+### Dockerfile版本修复
+1. 修复Go版本兼容性问题
+   - 确保使用 golang:1.24.0-alpine 基础镜像
+   - 添加 GO111MODULE=on 环境变量
+   - 移除不必要的 GOTOOLCHAIN 设置
+
+## 2024-03-04-7
+### Dockerfile构建修复
+1. 修复Go版本兼容性问题
+   - 确保使用 golang:1.24.0-alpine 基础镜像
+   - 添加 GO111MODULE=on 环境变量
+   - 移除不必要的 GOTOOLCHAIN 设置
+
+## 2024-03-04-8
+### Dockerfile网络优化
+1. 添加Go模块代理配置
+   - 设置 GOPROXY 环境变量
+   - 使用 goproxy.cn 作为国内代理
+   - 优化依赖下载速度
+
 待完善：
 - 添加sing-box生成格式

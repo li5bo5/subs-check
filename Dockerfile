@@ -4,6 +4,22 @@ FROM golang:1.24.0-alpine AS builder
 # 设置工作目录
 WORKDIR /app
 
+# 安装构建依赖
+RUN apk update && \
+    apk add --no-cache \
+    gcc \
+    musl-dev \
+    make \
+    git \
+    linux-headers
+
+# 设置 Go 环境变量
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    GO111MODULE=on \
+    GOPROXY=https://goproxy.cn,direct
+
 # 首先复制依赖文件
 COPY go.mod go.sum ./
 
@@ -15,11 +31,10 @@ RUN go mod download && \
 COPY . .
 
 # 构建应用
-RUN apk add --no-cache gcc musl-dev && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o main .
+RUN go build -ldflags="-s -w" -o main .
 
 # 运行阶段
-FROM alpine:latest
+FROM alpine:3.19
 
 # 设置时区
 ENV TZ=Asia/Shanghai
