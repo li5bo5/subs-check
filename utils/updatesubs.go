@@ -58,18 +58,11 @@ func makeRequest(client httpClient, method, url string) ([]byte, error) {
 }
 
 func UpdateSubs() {
-	if config.GlobalConfig.MihomoApiUrl == "" {
-		slog.Warn("未配置 MihomoApiUrl，跳过更新")
-		return
-	}
-
 	version, err := getVersion(http.DefaultClient)
 	if err != nil {
 		slog.Error(fmt.Sprintf("获取版本失败: %v", err))
 		return
 	}
-
-	slog.Info(fmt.Sprintf("当前Mihomo版本: %s", version))
 
 	names, err := getNeedUpdateNames(http.DefaultClient)
 	if err != nil {
@@ -82,20 +75,6 @@ func UpdateSubs() {
 		return
 	}
 	slog.Info("订阅更新完成")
-}
-
-func getVersion(client httpClient) (string, error) {
-	url := fmt.Sprintf("%s/version", config.GlobalConfig.MihomoApiUrl)
-	body, err := makeRequest(client, http.MethodGet, url)
-	if err != nil {
-		return "", err
-	}
-
-	var version versionResponse
-	if err := json.Unmarshal(body, &version); err != nil {
-		return "", fmt.Errorf("解析版本信息失败: %w", err)
-	}
-	return version.Version, nil
 }
 
 func getNeedUpdateNames(client httpClient) ([]string, error) {
