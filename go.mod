@@ -1,6 +1,6 @@
 module github.com/li5bo5/subs-check
 
-go 1.24.0
+go 1.22.0
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0

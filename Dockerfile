@@ -1,62 +1,14 @@
-# 构建阶段
-FROM golang:1.24.0-alpine AS builder
-
-# 设置工作目录
+FROM golang:alpine AS builder
 WORKDIR /app
-
-# 安装构建依赖
-RUN apk update && \
-    apk add --no-cache \
-    gcc \
-    musl-dev \
-    make \
-    git \
-    linux-headers
-
-# 设置 Go 环境变量
-ENV CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64 \
-    GO111MODULE=on \
-    GOPROXY=https://goproxy.cn,direct
-
-# 首先复制依赖文件
-COPY go.mod go.sum ./
-
-# 下载依赖
-RUN go mod download && \
-    go mod verify
-
-# 复制源代码
 COPY . .
+RUN go mod tidy && go build -ldflags="-s -w" -o main .
 
-# 构建应用
-RUN go build -ldflags="-s -w" -o main .
-
-# 运行阶段
-FROM alpine:3.19
-
-# 设置时区
+FROM alpine
 ENV TZ=Asia/Shanghai
-
-# 安装必要的包并设置时区
-RUN apk add --no-cache ca-certificates tzdata && \
-    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
+RUN apk add --no-cache alpine-conf ca-certificates  && \
+    /usr/sbin/setup-timezone -z Asia/Shanghai && \
+    apk del alpine-conf && \
     rm -rf /var/cache/apk/*
-
-# 设置工作目录
-WORKDIR /app
-
-# 从构建阶段复制二进制文件
-COPY --from=builder /app/main .
-
-# 暴露端口
+COPY --from=builder /app/main /app/main
+CMD /app/main
 EXPOSE 8199
-
-# 设置健康检查
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8199/health || exit 1
-
-# 运行应用
-CMD ["./main"]
