@@ -1,6 +1,6 @@
 # 更新历史
 
-## 2024-03-03-1
+## 2025-03-03-1
 
 ### 移除功能
 1. 移除解锁检测功能
@@ -33,7 +33,7 @@
 - 节点测速
 - 对外提供HTTP服务
 
-## 2024-03-03-2
+## 2025-03-03-2
 ### 修改
 - 移除MihomoApi更新订阅功能
 - CI/CD 配置调整
@@ -41,23 +41,23 @@
   - 仅保留 Docker Hub 镜像发布
   - 保持多平台构建支持 (linux/amd64, linux/arm64, linux/arm/v7) 
 
-## 2024-03-03-3
+## 2025-03-03-3
 ### 推送github
 - 推送github
 
-## 2024-03-03-4
+## 2025-03-03-4
 ### 小修
 - 移除config.example.yaml中worker-url和worker-token内容
 - 移除config.example.yaml中mihomo-api-url和mihomo-api-secret内容
 - 移除config.go中MihomoApiUrl和MihomoApiSecret字段
 
-## 2024-03-03-5
+## 2025-03-03-5
 ### 小修
 - 日志：未配置 MihomoApiUrl，跳过更新
 - 移除updatesubs.go中getversion字段
 - 移除MihomoApi更新订阅功能
 
-## 2024-03-04-1
+## 2025-03-04-1
 ### 代码优化
 1. 优化 utils/updatesubs.go
    - 移除未使用的版本相关代码和结构体
@@ -78,14 +78,14 @@
    - 优化构建流程，分步执行依赖下载和验证
    - 使用 JSON 数组格式的 CMD 指令，提高稳定性
 
-## 2024-03-04-2
+## 2025-03-04-2
 ### 配置更新
 1. 更新 Dockerfile 基础镜像
    - 升级 Go 版本到最新稳定版 1.24.0
    - 使用 golang:1.24.0-alpine 作为构建基础镜像
    - 移除旧版本注释
 
-## 2024-03-04-3
+## 2025-03-04-3
 ### Dockerfile优化
 1. 优化构建流程
    - 分离依赖安装和代码构建步骤
@@ -97,40 +97,62 @@
    - 添加健康检查机制
    - 简化容器运行配置
 
-## 2024-03-04-4
+## 2025-03-04-4
 ### Dockerfile构建修复
 1. 添加必要的构建依赖
    - 增加 linux-headers 支持
    - 添加 git 和 make 工具
    - 优化依赖安装顺序
 
-## 2024-03-04-5
+## 2025-03-04-5
 ### Dockerfile CI/CD 适配
 1. 优化构建环境
    - 添加包索引更新
    - 通过环境变量设置构建参数
    - 明确指定目标平台为 linux/amd64
 
-## 2024-03-04-6
+## 2025-03-04-6
 ### Dockerfile版本修复
 1. 修复Go版本兼容性问题
    - 确保使用 golang:1.24.0-alpine 基础镜像
    - 添加 GO111MODULE=on 环境变量
    - 移除不必要的 GOTOOLCHAIN 设置
 
-## 2024-03-04-7
+## 2025-03-04-7
 ### Dockerfile构建修复
 1. 修复Go版本兼容性问题
    - 确保使用 golang:1.24.0-alpine 基础镜像
    - 添加 GO111MODULE=on 环境变量
    - 移除不必要的 GOTOOLCHAIN 设置
 
-## 2024-03-04-8
+## 2025-03-04-8
 ### Dockerfile网络优化
 1. 添加Go模块代理配置
    - 设置 GOPROXY 环境变量
    - 使用 goproxy.cn 作为国内代理
    - 优化依赖下载速度
 
+## 2025-03-06-1
+### 更换端口为8299
+### 订阅获取优化
+1. 优化 proxy/get.go 文件
+   - https://github.com/bestruirui/BestSub/commit/09b569e4c22d3ec1890f9bf8185405d1c338f23b
+   - 添加并发处理功能
+   - 使用 goroutine 池处理订阅链接
+   - 通过 channel 进行任务分发和结果收集
+   - 使用 sync.WaitGroup 确保任务完成
+   - 动态计算最优并发数
+   - 添加更详细的日志记录
+   - 优化错误处理机制
+   - 重构代码结构，提取 processSubscription 函数
+   - 保持原有的调试日志和错误处理特性
+
+2. 性能改进
+   - 使用缓冲通道减少阻塞
+   - 优化内存分配
+   - 通过配置控制并发数量
+   - 实际并发数不超过订阅链接数量
+   
 待完善：
+- 更换基础仓库
 - 添加sing-box生成格式

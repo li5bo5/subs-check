@@ -24,7 +24,7 @@ type Config struct {
 
 var GlobalConfig = &Config{
 	// 新增配置，给未更改配置文件的用户一个默认值
-	ListenPort: ":8199",
+	ListenPort: ":8299",
 }
 
 //go:embed config.example.yaml
