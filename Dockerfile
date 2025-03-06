@@ -11,4 +11,4 @@ RUN apk add --no-cache alpine-conf ca-certificates  && \
     rm -rf /var/cache/apk/*
 COPY --from=builder /app/main /app/main
 CMD /app/main
-EXPOSE 8199
+EXPOSE 8299
