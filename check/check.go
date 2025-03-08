@@ -37,6 +37,7 @@ type ProxyChecker struct {
 	available   int32
 	resultChan  chan Result
 	tasks       chan map[string]any
+	mu          sync.Mutex  // 添加互斥锁保护 results
 }
 
 // NewProxyChecker 创建新的检测器实例
@@ -78,22 +79,29 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 	slog.Info("开始检测节点")
 	slog.Info(fmt.Sprintf("启动工作线程: %d", pc.threadCount))
 
+	// 创建带超时的上下文
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.GlobalConfig.Timeout*len(proxies)) * time.Millisecond)
+	defer cancel()
+
 	done := make(chan bool)
+	defer close(done)
+
 	if config.GlobalConfig.PrintProgress {
 		go pc.showProgress(done)
 	}
+
 	var wg sync.WaitGroup
 	// 启动工作线程
 	for i := 0; i < pc.threadCount; i++ {
 		wg.Add(1)
-		go pc.worker(&wg)
+		go pc.worker(ctx, &wg)
 	}
 
 	// 发送任务
 	go pc.distributeProxies(proxies)
 	slog.Debug(fmt.Sprintf("发送任务: %d", len(proxies)))
 
-	// 收集结果 - 添加一个 WaitGroup 来等待结果收集完成
+	// 收集结果
 	var collectWg sync.WaitGroup
 	collectWg.Add(1)
 	go func() {
@@ -101,29 +109,48 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 		collectWg.Done()
 	}()
 
-	wg.Wait()
-	close(pc.resultChan)
+	// 等待所有工作线程完成或超时
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(pc.resultChan)
+		close(done)
+	}()
 
-	// 等待结果收集完成
-	collectWg.Wait()
-	// 等待进度条显示完成
-	time.Sleep(100 * time.Millisecond)
+	select {
+	case <-ctx.Done():
+		slog.Warn("检测超时，正在终止...")
+		return pc.results, ctx.Err()
+	case <-done:
+		// 等待结果收集完成
+		collectWg.Wait()
+		// 等待进度条显示完成
+		time.Sleep(100 * time.Millisecond)
 
-	if config.GlobalConfig.PrintProgress {
-		done <- true
+		if config.GlobalConfig.PrintProgress {
+			done <- true
+		}
+		slog.Info(fmt.Sprintf("可用节点数量: %d", len(pc.results)))
+		return pc.results, nil
 	}
-	slog.Info(fmt.Sprintf("可用节点数量: %d", len(pc.results)))
-	return pc.results, nil
 }
 
 // worker 处理单个代理检测的工作线程
-func (pc *ProxyChecker) worker(wg *sync.WaitGroup) {
+func (pc *ProxyChecker) worker(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for proxy := range pc.tasks {
-		if result := pc.checkProxy(proxy); result != nil {
-			pc.resultChan <- *result
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case proxy, ok := <-pc.tasks:
+			if !ok {
+				return
+			}
+			if result := pc.checkProxy(proxy); result != nil {
+				pc.resultChan <- *result
+			}
+			pc.incrementProgress()
 		}
-		pc.incrementProgress()
 	}
 }
 
@@ -134,36 +161,56 @@ func (pc *ProxyChecker) checkProxy(proxy map[string]any) *Result {
 		slog.Debug(fmt.Sprintf("创建代理Client失败: %v", proxy["name"]))
 		return nil
 	}
+	defer func() {
+		if transport, ok := httpClient.Transport.(*http.Transport); ok {
+			transport.CloseIdleConnections()
+		}
+	}()
 
 	res := &Result{
 		Proxy: proxy,
 	}
 
 	if os.Getenv("SUB_CHECK_SKIP") == "true" {
-		// slog.Debug(fmt.Sprintf("跳过检测代理: %v", proxy["name"]))
+		slog.Debug(fmt.Sprintf("跳过检测代理: %v", proxy["name"]))
 		return res
 	}
 
 	cloudflare, err := platfrom.CheckCloudflare(httpClient)
-	if err != nil || !cloudflare {
+	if err != nil {
+		slog.Debug(fmt.Sprintf("Cloudflare检测失败 [%v]: %v", proxy["name"], err))
+		return nil
+	}
+	if !cloudflare {
+		slog.Debug(fmt.Sprintf("Cloudflare检测不通过: %v", proxy["name"]))
 		return nil
 	}
 
 	google, err := platfrom.CheckGoogle(httpClient)
-	if err != nil || !google {
+	if err != nil {
+		slog.Debug(fmt.Sprintf("Google检测失败 [%v]: %v", proxy["name"], err))
 		return nil
 	}
+	if !google {
+		slog.Debug(fmt.Sprintf("Google检测不通过: %v", proxy["name"]))
+		return nil
+	}
+
 	var speed int
 	if config.GlobalConfig.SpeedTestUrl != "" {
 		speed, err = platfrom.CheckSpeed(httpClient)
-		if err != nil || speed < config.GlobalConfig.MinSpeed {
+		if err != nil {
+			slog.Debug(fmt.Sprintf("速度测试失败 [%v]: %v", proxy["name"], err))
+			return nil
+		}
+		if speed < config.GlobalConfig.MinSpeed {
+			slog.Debug(fmt.Sprintf("速度测试不达标 [%v]: %d < %d", proxy["name"], speed, config.GlobalConfig.MinSpeed))
 			return nil
 		}
 	}
 
-	// 更新代理名称
-	pc.updateProxyName(proxy, httpClient, speed)
 	pc.incrementAvailable()
+	pc.updateProxyName(proxy, httpClient, speed)
 
 	res.Cloudflare = cloudflare
 	res.Google = google
@@ -233,7 +280,9 @@ func (pc *ProxyChecker) distributeProxies(proxies []map[string]any) {
 // collectResults 收集检测结果
 func (pc *ProxyChecker) collectResults() {
 	for result := range pc.resultChan {
+		pc.mu.Lock()
 		pc.results = append(pc.results, result)
+		pc.mu.Unlock()
 	}
 }
 
@@ -244,27 +293,44 @@ func CreateClient(mapping map[string]any) *http.Client {
 		return nil
 	}
 
-	return &http.Client{
-		Timeout: time.Duration(config.GlobalConfig.Timeout) * time.Millisecond,
-		Transport: &http.Transport{
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				host, port, err := net.SplitHostPort(addr)
-				if err != nil {
-					return nil, err
-				}
-				var u16Port uint16
-				if port, err := strconv.ParseUint(port, 10, 16); err == nil {
-					u16Port = uint16(port)
-				}
-				return proxy.DialContext(ctx, &constant.Metadata{
-					Host:    host,
-					DstPort: u16Port,
-				})
-			},
-			// 设置空闲连接超时
-			IdleConnTimeout: time.Duration(config.GlobalConfig.Timeout) * time.Millisecond,
-			// 关闭keepalive
-			DisableKeepAlives: true,
-		},
+	// 计算动态超时时间
+	baseTimeout := time.Duration(config.GlobalConfig.Timeout) * time.Millisecond
+	dialTimeout := baseTimeout / 3
+	if dialTimeout < 1*time.Second {
+		dialTimeout = 1 * time.Second
 	}
+
+	transport := &http.Transport{
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			// 使用动态超时时间
+			dialCtx, cancel := context.WithTimeout(ctx, dialTimeout)
+			defer cancel()
+			
+			host, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+
+			return proxy.DialContext(dialCtx, &constant.Metadata{
+				Host:      host,
+				DstPort:   port,
+				NetWork:   network,
+				Type:      constant.HTTP,
+				DNSMode:   constant.DNSNormal,
+				DNSWant:   constant.DNSTypeA,
+				SpecialRaw: "",
+			})
+		},
+		MaxIdleConns:        100,
+		IdleConnTimeout:     90 * time.Second,
+		DisableKeepAlives:   false,
+		MaxIdleConnsPerHost: 10,
+	}
+
+	client := &http.Client{
+		Timeout:   baseTimeout,
+		Transport: transport,
+	}
+
+	return client
 }
