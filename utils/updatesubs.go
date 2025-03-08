@@ -8,17 +8,12 @@ import (
 
 	"log/slog"
 
-	"github.com/beck-8/subs-check/config"
+	"github.com/li5bo5/subs-check/config"
 )
 
 // 定义通用的 HTTP 客户端接口
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
-}
-
-// API 响应的结构体
-type versionResponse struct {
-	Version string `json:"version"`
 }
 
 type providersResponse struct {
@@ -58,12 +53,6 @@ func makeRequest(client httpClient, method, url string) ([]byte, error) {
 }
 
 func UpdateSubs() {
-	version, err := getVersion(http.DefaultClient)
-	if err != nil {
-		slog.Error(fmt.Sprintf("获取版本失败: %v", err))
-		return
-	}
-
 	names, err := getNeedUpdateNames(http.DefaultClient)
 	if err != nil {
 		slog.Error(fmt.Sprintf("获取需要更新的订阅失败: %v", err))
@@ -80,20 +69,6 @@ func UpdateSubs() {
 		return
 	}
 	slog.Info(fmt.Sprintf("更新完成，共 %d 个节点", len(names)))
-}
-
-func getVersion(client httpClient) (string, error) {
-	url := fmt.Sprintf("%s/version", config.GlobalConfig.MihomoApiUrl)
-	body, err := makeRequest(client, http.MethodGet, url)
-	if err != nil {
-		return "", err
-	}
-
-	var version versionResponse
-	if err := json.Unmarshal(body, &version); err != nil {
-		return "", fmt.Errorf("解析版本信息失败: %w", err)
-	}
-	return version.Version, nil
 }
 
 func getNeedUpdateNames(client httpClient) ([]string, error) {

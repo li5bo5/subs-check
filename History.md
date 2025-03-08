@@ -176,3 +176,15 @@
 - 节点去重和重命名
 - 节点测速
 - 对外提供HTTP服务
+
+## 2024-03-09-1
+### 修复构建错误
+1. 优化 utils/updatesubs.go 文件
+   - 移除未使用的 version 相关代码和结构体
+   - 移除 getVersion 函数
+   - 简化 UpdateSubs 函数的流程
+
+## 2024-03-09-2
+### 修复构建错误
+1. 修复 utils/updatesubs.go 文件
+   - 修正错误的导入路径，从 `github.com/beck-8/subs-check/config` 改为 `github.com/li5bo5/subs-check/config`
