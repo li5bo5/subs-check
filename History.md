@@ -255,3 +255,30 @@
 1. 优化 check/check.go 文件
    - 移除未使用的 `strconv` 包导入
    - 保持代码整洁性
+
+## 2024-03-08-8
+### 修复编译错误
+1. 修复 check/check.go 文件中的 mihomo 相关问题
+   - 移除已废弃的 `ResetRenameCounter` 调用
+   - 修复端口类型转换问题，将字符串转为 uint16
+   - 更新 mihomo 常量使用，使用 `constant.TCP` 替代字符串
+   - 移除不存在的字段 `DNSWant` 和 `SpecialRaw`
+   - 简化 Metadata 结构体字段
+
+待完善：
+- 记录变更内容
+- 更新
+- 添加sing-box生成格式
+
+## 2024-03-08-9
+### 修复 Release 构建错误
+1. 修复 check/check.go 文件中的编译错误
+   - 移除 `proxyutils.ResetRenameCounter()` 调用
+   - 简化 `constant.Metadata` 结构体的使用
+   - 移除不必要的字段 `NetWork`、`DNSMode`
+   - 优化代理连接逻辑
+
+待完善：
+- 记录变更内容
+- 更新
+- 添加sing-box生成格式
