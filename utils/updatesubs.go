@@ -2,7 +2,6 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,15 +15,6 @@ import (
 // 这个接口允许我们在测试时注入模拟的 HTTP 客户端
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
-}
-
-// providersResponse 定义了从 API 获取的提供者信息的数据结构
-type providersResponse struct {
-	// Providers 是一个 map，key 是提供者名称，value 是提供者的详细信息
-	Providers map[string]struct {
-		// VehicleType 表示提供者的类型（如 "HTTP"）
-		VehicleType string `json:"vehicleType"`
-	} `json:"providers"`
 }
 
 // makeRequest 处理通用的 HTTP 请求逻辑
