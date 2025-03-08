@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -58,8 +59,6 @@ func NewProxyChecker(proxies []map[string]any) *ProxyChecker {
 
 // Check 执行代理检测的主函数
 func Check() ([]Result, error) {
-	proxyutils.ResetRenameCounter()
-
 	proxies, err := proxyutils.GetProxies()
 	if err != nil {
 		return nil, fmt.Errorf("获取节点失败: %w", err)
@@ -310,15 +309,19 @@ func CreateClient(mapping map[string]any) *http.Client {
 				return nil, err
 			}
 
-			return proxy.DialContext(dialCtx, &constant.Metadata{
-				Host:      host,
-				DstPort:   port,
-				NetWork:   network,
-				Type:      constant.HTTP,
-				DNSMode:   constant.DNSNormal,
-				DNSWant:   constant.DNSTypeA,
-				SpecialRaw: "",
-			})
+			// 转换端口为 uint16
+			portNum, err := strconv.ParseUint(port, 10, 16)
+			if err != nil {
+				return nil, fmt.Errorf("invalid port number: %s", port)
+			}
+
+			metadata := &constant.Metadata{
+				Host:    host,
+				DstPort: uint16(portNum),
+				Type:    constant.HTTP,
+			}
+
+			return proxy.DialContext(dialCtx, metadata)
 		},
 		MaxIdleConns:        100,
 		IdleConnTimeout:     90 * time.Second,
