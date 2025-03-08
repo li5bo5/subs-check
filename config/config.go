@@ -18,8 +18,6 @@ type Config struct {
 	SubUrlsReTry       int      `yaml:"sub-urls-retry"`
 	SubUrls            []string `yaml:"sub-urls"`
 	ListenPort         string   `yaml:"listen-port"`
-	RenameNode         bool     `yaml:"rename-node"`
-	KeepSuccessProxies bool     `yaml:"keep-success-proxies"`
 }
 
 var GlobalConfig = &Config{
@@ -29,5 +27,3 @@ var GlobalConfig = &Config{
 
 //go:embed config.example.yaml
 var DefaultConfigTemplate []byte
-
-var GlobalProxies []map[string]any

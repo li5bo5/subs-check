@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*'
+# 触发条件：当推送任何标签时触发工作流
       
 permissions:
   contents: write

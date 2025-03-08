@@ -66,15 +66,6 @@ func Check() ([]Result, error) {
 	}
 	slog.Info(fmt.Sprintf("获取节点数量: %d", len(proxies)))
 
-	if config.GlobalConfig.KeepSuccessProxies {
-		slog.Info(fmt.Sprintf("添加之前测试成功的节点，数量: %d", len(config.GlobalProxies)))
-		for _, proxy := range config.GlobalProxies {
-			proxies = append(proxies, proxy)
-		}
-	}
-	// 重置全局节点
-	config.GlobalProxies = make([]map[string]any, 0)
-
 	proxies = proxyutils.DeduplicateProxies(proxies)
 	slog.Info(fmt.Sprintf("去重后节点数量: %d", len(proxies)))
 
@@ -181,21 +172,6 @@ func (pc *ProxyChecker) checkProxy(proxy map[string]any) *Result {
 
 // updateProxyName 更新代理名称
 func (pc *ProxyChecker) updateProxyName(proxy map[string]any, client *http.Client, speed int) {
-	// hy2协议 不知道为什么在被前边测速后就脏了，就不能用了，我也不知道为什么，奇葩。
-	// 可能底层mihomo的bug，什么泄露之类的，请求任何网址都超时。所以这里创新创建一个client
-	httpClient := CreateClient(proxy)
-	if httpClient == nil {
-		slog.Debug(fmt.Sprintf("创建updateProxyName代理Client失败: %v", proxy["name"]))
-		return
-	}
-	// 以节点IP查询位置重命名节点
-	if config.GlobalConfig.RenameNode {
-		country := proxyutils.GetProxyCountry(httpClient)
-		if country == "" {
-			country = "未识别"
-		}
-		proxy["name"] = proxyutils.Rename(country)
-	}
 	// 获取速度
 	if config.GlobalConfig.SpeedTestUrl != "" {
 		var speedStr string
