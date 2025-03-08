@@ -4,32 +4,8 @@ before:
   hooks:
     - go mod tidy
 
-builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-      - arm
-      - "386"
-    goarm:
-      - "7"
-    ignore:
-      - goos: darwin
-        goarch: arm
-      - goos: windows
-        goarch: arm
-      - goos: darwin
-        goarch: "386"
-    mod_timestamp: '{{ .CommitTimestamp }}'
-    flags:
-      - -trimpath
-    ldflags:
-      - -s -w
+# 禁用构建二进制文件，只发布源代码
+# builds部分已被禁用，以便只发布源代码而不构建二进制文件
 
 archives:
   - format: tar.gz
@@ -53,4 +29,4 @@ changelog:
       - '^test:'
       - '^chore:'
       - Merge pull request
-      - Merge branch 
+      - Merge branch

@@ -1,7 +1,14 @@
 FROM golang:alpine AS builder
 WORKDIR /app
+
+# 先复制依赖文件，利用Docker缓存机制
+COPY go.mod go.sum ./
+RUN go mod download
+
+# 设置环境变量并复制源代码
+ENV CGO_ENABLED=0
 COPY . .
-RUN go mod tidy && go build -ldflags="-s -w" -o main .
+RUN go build -ldflags="-s -w" -o main .
 
 FROM alpine
 ENV TZ=Asia/Shanghai
