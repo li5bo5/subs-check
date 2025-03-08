@@ -149,8 +149,26 @@ func GetDateFromSubs(subUrl string) ([]byte, error) {
 	maxRetries := config.GlobalConfig.SubUrlsReTry
 	var lastErr error
 
-	// 创建 HTTP 客户端
-	client := &http.Client{}
+	// 创建 HTTP 客户端，设置合理的超时时间
+	client := &http.Client{
+		// 设置总体超时时间为10秒，避免请求长时间阻塞
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			// 设置连接超时
+			DialContext: (&net.Dialer{
+				Timeout:   3 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			// 设置TLS握手超时
+			TLSHandshakeTimeout: 3 * time.Second,
+			// 设置响应头超时
+			ResponseHeaderTimeout: 5 * time.Second,
+			// 设置空闲连接超时
+			IdleConnTimeout:     90 * time.Second,
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 10,
+		},
+	}
 
 	// 重试循环
 	for i := 0; i < maxRetries; i++ {

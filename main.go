@@ -133,22 +133,22 @@ func (app *App) initConfigWatcher() error {
 					}
 					app.reloadTimer.Reset(100 * time.Millisecond)
 
-					go func() {
-						<-app.reloadTimer.C
-						slog.Info("配置文件发生变化，正在重新加载")
-						if err := app.loadConfig(); err != nil {
-							slog.Error(fmt.Sprintf("重新加载配置文件失败: %v", err))
-							return
-						}
-						// 更新检查间隔
-						app.interval = config.GlobalConfig.CheckInterval
-					}()
+					// 使用单一 goroutine 监听定时器，避免每次文件变动都启动新的 goroutine
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
 				}
 				slog.Error(fmt.Sprintf("配置文件监听错误: %v", err))
+			case <-app.reloadTimer.C:
+				// 定时器触发时重新加载配置
+				slog.Info("配置文件发生变化，正在重新加载")
+				if err := app.loadConfig(); err != nil {
+					slog.Error(fmt.Sprintf("重新加载配置文件失败: %v", err))
+					return
+				}
+				// 更新检查间隔
+				app.interval = config.GlobalConfig.CheckInterval
 			}
 		}
 	}()

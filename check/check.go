@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -309,8 +308,8 @@ func CreateClient(mapping map[string]any) *http.Client {
 				return nil, err
 			}
 
-			// 转换端口为 uint16
-			portNum, err := strconv.ParseUint(port, 10, 16)
+			// 使用net包的函数获取端口号
+			portNum, err := net.LookupPort(network, port)
 			if err != nil {
 				return nil, fmt.Errorf("invalid port number: %s", port)
 			}
