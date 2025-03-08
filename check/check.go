@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -83,11 +82,11 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.GlobalConfig.Timeout*len(proxies)) * time.Millisecond)
 	defer cancel()
 
-	done := make(chan bool)
-	defer close(done)
+	progressDone := make(chan bool)
+	defer close(progressDone)
 
 	if config.GlobalConfig.PrintProgress {
-		go pc.showProgress(done)
+		go pc.showProgress(progressDone)
 	}
 
 	var wg sync.WaitGroup
@@ -110,25 +109,25 @@ func (pc *ProxyChecker) run(proxies []map[string]any) ([]Result, error) {
 	}()
 
 	// 等待所有工作线程完成或超时
-	done := make(chan struct{})
+	workersDone := make(chan struct{})
 	go func() {
 		wg.Wait()
 		close(pc.resultChan)
-		close(done)
+		close(workersDone)
 	}()
 
 	select {
 	case <-ctx.Done():
 		slog.Warn("检测超时，正在终止...")
 		return pc.results, ctx.Err()
-	case <-done:
+	case <-workersDone:
 		// 等待结果收集完成
 		collectWg.Wait()
 		// 等待进度条显示完成
 		time.Sleep(100 * time.Millisecond)
 
 		if config.GlobalConfig.PrintProgress {
-			done <- true
+			progressDone <- true
 		}
 		slog.Info(fmt.Sprintf("可用节点数量: %d", len(pc.results)))
 		return pc.results, nil
