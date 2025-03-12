@@ -1,6 +1,23 @@
 # 更新历史
 
-待完善：
+## 2024-03-11-1
+### 添加通知渠道功能
+1. 添加 `utils/notify.go` 文件实现通知功能
+   - 使用 Apprise API 支持 100+ 种通知渠道
+   - 支持三种通知类型：启动通知、结果通知、错误通知
+   - 可配置不同情况下是否发送通知
+2. 更新配置文件
+   - 在 `config/config.go` 中添加通知相关配置字段
+   - 在 `config/config.example.yaml` 中添加通知配置示例
+3. 在 `main.go` 中集成通知功能
+   - 程序启动时发送启动通知
+   - 检测完成后发送结果通知
+   - 出现错误时发送错误通知
+4. 添加节点统计信息
+   - 统计总节点数、可用节点数和可用率
+   - 在日志和通知中显示统计信息
+
+## 待完善：
 - 记录变更内容
 - 升级go.mod中组件版本
 - 优化内存
@@ -177,71 +194,3 @@
 - 节点去重和重命名
 - 节点测速
 - 对外提供HTTP服务
-
-## 2024-03-09-1
-### 修复构建错误
-1. 优化 utils/updatesubs.go 文件
-   - 移除未使用的 version 相关代码和结构体
-   - 移除 getVersion 函数
-   - 简化 UpdateSubs 函数的流程
-
-## 2024-03-09-2
-### 修复构建错误
-1. 修复 utils/updatesubs.go 文件
-   - 修正错误的导入路径，从 `github.com/beck-8/subs-check/config` 改为 `github.com/li5bo5/subs-check/config`
-
-# 23-12-19-1
-
-修改文件：utils/updatesubs.go
-- 移除了 MihomoApi 相关的代码和配置依赖
-- 简化了订阅更新逻辑，直接使用配置文件中的 sub-urls
-- 移除了不必要的认证逻辑
-
-功能变更：
-- 移除了对 MihomoApi 的依赖，现在直接从配置的订阅 URL 获取更新
-
-## 2024-03-08-6
-### 修复编译错误
-1. 修复 check/check.go 文件中的 channel 命名冲突
-   - 重命名重复定义的 `done` channel
-   - 将进度显示的 channel 重命名为 `progressDone`
-   - 将工作线程完成的 channel 重命名为 `workersDone`
-   - 确保所有 channel 的用途明确且名称唯一
-
-待完善：
-- 记录变更内容
-- 更新
-- 添加sing-box生成格式
-
-## 2024-03-08-7
-### 代码清理
-1. 优化 check/check.go 文件
-   - 移除未使用的 `strconv` 包导入
-   - 保持代码整洁性
-
-## 2024-03-08-8
-### 修复编译错误
-1. 修复 check/check.go 文件中的 mihomo 相关问题
-   - 移除已废弃的 `ResetRenameCounter` 调用
-   - 修复端口类型转换问题，将字符串转为 uint16
-   - 更新 mihomo 常量使用，使用 `constant.TCP` 替代字符串
-   - 移除不存在的字段 `DNSWant` 和 `SpecialRaw`
-   - 简化 Metadata 结构体字段
-
-待完善：
-- 记录变更内容
-- 更新
-- 添加sing-box生成格式
-
-## 2024-03-08-9
-### 修复 Release 构建错误
-1. 修复 check/check.go 文件中的编译错误
-   - 移除 `proxyutils.ResetRenameCounter()` 调用
-   - 简化 `constant.Metadata` 结构体的使用
-   - 移除不必要的字段 `NetWork`、`DNSMode`
-   - 优化代理连接逻辑
-
-待完善：
-- 记录变更内容
-- 更新
-- 添加sing-box生成格式
