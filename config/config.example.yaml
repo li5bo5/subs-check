@@ -49,3 +49,20 @@ sub-urls:
   - https://example.com/sub2.txt
   - https://example.com/sub?token=43fa8f0dc9bb00dcfec2afb21b14378a
   - https://example.com/sub?token=43fa8f0dc9bb00dcfec2afb21b14378a?flag=clash.meta
+
+# 通知配置 (使用Apprise API，支持100+种通知渠道)
+# 参考文档：https://github.com/caronc/apprise-api 和 https://github.com/caronc/apprise
+# Apprise API URL 地址 (可选)
+apprise-url: ""
+
+# Apprise API Tag 用于过滤通知服务 (可选)
+apprise-tag: ""
+
+# 程序启动时通知
+notify-on-start: false
+
+# 处理结果通知
+notify-on-result: false
+
+# 错误时通知
+notify-on-error: true

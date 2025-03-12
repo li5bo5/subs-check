@@ -59,6 +59,9 @@ func (app *App) Initialize() error {
 		return fmt.Errorf("初始化HTTP服务器失败: %w", err)
 	}
 
+	// 发送程序启动通知
+	utils.NotifyStart()
+
 	return nil
 }
 
@@ -193,6 +196,8 @@ func (app *App) Run() {
 
 	for {
 		if err := app.checkProxies(); err != nil {
+			// 发送错误通知
+			utils.NotifyError(err.Error())
 			slog.Error(fmt.Sprintf("检测代理失败: %v", err))
 			os.Exit(1)
 		}
@@ -212,9 +217,28 @@ func (app *App) checkProxies() error {
 		return fmt.Errorf("检测代理失败: %w", err)
 	}
 
+	// 计算可用节点数量
+	availableCount := 0
+	totalCount := len(results)
+	for _, result := range results {
+		if result.Google || result.Cloudflare {
+			availableCount++
+		}
+	}
+
 	slog.Info("检测完成")
+	slog.Info(fmt.Sprintf("节点总数: %d, 可用节点: %d, 可用率: %.2f%%", 
+		totalCount, 
+		availableCount, 
+		float64(availableCount)/float64(totalCount)*100))
+
+	// 保存结果
 	save.SaveConfig(results)
 	utils.UpdateSubs()
+
+	// 发送结果通知
+	utils.NotifyResult(totalCount, availableCount, "")
+
 	return nil
 }
 
