@@ -10,5 +10,5 @@ RUN apk add --no-cache alpine-conf ca-certificates  && \
     apk del alpine-conf && \
     rm -rf /var/cache/apk/*
 COPY --from=builder /app/main /app/main
-CMD /app/main
+CMD ["/app/main"]
 EXPOSE 8299

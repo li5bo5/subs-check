@@ -15,12 +15,12 @@ import (
 type NotifyType int
 
 const (
-	// NotifyStart 程序启动通知
-	NotifyStart NotifyType = iota
-	// NotifyResult 结果通知
-	NotifyResult
-	// NotifyError 错误通知
-	NotifyError
+	// TYPE_NotifyStart 程序启动通知
+	TYPE_NotifyStart NotifyType = iota
+	// TYPE_NotifyResult 结果通知
+	TYPE_NotifyResult
+	// TYPE_NotifyError 错误通知
+	TYPE_NotifyError
 )
 
 // NotifyMessage Apprise API消息结构
@@ -51,15 +51,15 @@ func SendNotification(notifyType NotifyType, title string, body string, attach s
 
 	// 根据通知类型检查是否需要发送
 	switch notifyType {
-	case NotifyStart:
+	case TYPE_NotifyStart:
 		if !config.GlobalConfig.NotifyOnStart {
 			return nil
 		}
-	case NotifyResult:
+	case TYPE_NotifyResult:
 		if !config.GlobalConfig.NotifyOnResult {
 			return nil
 		}
-	case NotifyError:
+	case TYPE_NotifyError:
 		if !config.GlobalConfig.NotifyOnError {
 			return nil
 		}
@@ -112,11 +112,11 @@ func SendNotification(notifyType NotifyType, title string, body string, attach s
 // getNotifyTypeString 返回通知类型对应的字符串
 func getNotifyTypeString(notifyType NotifyType) string {
 	switch notifyType {
-	case NotifyStart:
+	case TYPE_NotifyStart:
 		return "info"
-	case NotifyResult:
+	case TYPE_NotifyResult:
 		return "success"
-	case NotifyError:
+	case TYPE_NotifyError:
 		return "failure"
 	default:
 		return "info"
@@ -131,7 +131,7 @@ func NotifyStart() {
 		time.Now().Format("2006-01-02 15:04:05"),
 		len(config.GlobalConfig.SubUrls))
 	
-	if err := SendNotification(NotifyStart, title, body, ""); err != nil {
+	if err := SendNotification(TYPE_NotifyStart, title, body, ""); err != nil {
 		slog.Error(fmt.Sprintf("发送启动通知失败: %v", err))
 	}
 }
@@ -146,7 +146,7 @@ func NotifyResult(totalCount int, availableCount int, imageURL string) {
 		availableCount,
 		float64(availableCount)/float64(totalCount)*100)
 	
-	if err := SendNotification(NotifyResult, title, body, imageURL); err != nil {
+	if err := SendNotification(TYPE_NotifyResult, title, body, imageURL); err != nil {
 		slog.Error(fmt.Sprintf("发送结果通知失败: %v", err))
 	}
 }
@@ -159,7 +159,7 @@ func NotifyError(errorMsg string) {
 		time.Now().Format("2006-01-02 15:04:05"),
 		errorMsg)
 	
-	if err := SendNotification(NotifyError, title, body, ""); err != nil {
+	if err := SendNotification(TYPE_NotifyError, title, body, ""); err != nil {
 		slog.Error(fmt.Sprintf("发送错误通知失败: %v", err))
 	}
 }
