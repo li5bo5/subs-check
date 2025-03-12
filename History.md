@@ -1,5 +1,16 @@
 # 更新历史
 
+## 2024-03-12-1
+### 修复构建错误
+1. 修复函数命名冲突问题
+   - 在 `utils/notify.go` 中修改常量名称，避免与函数名冲突
+   - 将 `NotifyStart`、`NotifyResult` 和 `NotifyError` 常量重命名为 `TYPE_NotifyStart`、`TYPE_NotifyResult` 和 `TYPE_NotifyError`
+   - 保持函数名称不变，确保API兼容性
+2. 优化Dockerfile
+   - 将CMD指令修改为JSON数组格式 `CMD ["/app/main"]`
+   - 解决OS信号处理相关的潜在问题
+   - 提高容器运行的稳定性
+
 ## 2024-03-11-1
 ### 添加通知渠道功能
 1. 添加 `utils/notify.go` 文件实现通知功能
